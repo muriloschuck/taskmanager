@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 5
+      author: taskmanager
+      changes:
+        - createTable:
+            tableName: task_comments
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: task_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_comments_task
+                    references: tasks(id)
+                    deleteCascade: true
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_comments_user
+                    references: users(id)
+              - column:
+                  name: content
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false

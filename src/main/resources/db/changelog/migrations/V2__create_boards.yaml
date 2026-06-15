@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2
+      author: taskmanager
+      changes:
+        - createTable:
+            tableName: boards
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: owner_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_boards_owner
+                    references: users(id)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
