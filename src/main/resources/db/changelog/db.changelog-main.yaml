@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/migrations/V1__create_users.yaml
+      relativeToChangelogFile: false
+  - include:
+      file: db/changelog/migrations/V2__create_boards.yaml
+      relativeToChangelogFile: false
+  - include:
+      file: db/changelog/migrations/V3__create_board_members.yaml
+      relativeToChangelogFile: false
+  - include:
+      file: db/changelog/migrations/V4__create_tasks.yaml
+      relativeToChangelogFile: false
+  - include:
+      file: db/changelog/migrations/V5__create_task_comments.yaml
+      relativeToChangelogFile: false
+  - include:
+      file: db/changelog/migrations/V6__create_indexes.yaml
+      relativeToChangelogFile: false

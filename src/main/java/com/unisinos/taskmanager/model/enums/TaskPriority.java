@@ -1,0 +1,7 @@
+package com.unisinos.taskmanager.model.enums;
+
+public enum TaskPriority {
+  LOW,
+  MEDIUM,
+  HIGH
+}
