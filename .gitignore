@@ -1,0 +1,13 @@
+target/
+!.mvn/wrapper/maven-wrapper.properties
+*.class
+
+# IntelliJ
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Logs e configs locais
+*.log
+.env
