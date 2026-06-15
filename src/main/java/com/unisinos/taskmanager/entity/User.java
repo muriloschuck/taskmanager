@@ -21,6 +21,8 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    @jakarta.validation.constraints.Email
+    @jakarta.validation.constraints.NotBlank
     private String email;
 
     @Column(nullable = false)
@@ -28,6 +30,7 @@ public class User {
     private String passwordHash;
 
     @Column(nullable = false)
+    @jakarta.validation.constraints.NotBlank
     private String name;
 
     @Column(name = "created_at", updatable = false)

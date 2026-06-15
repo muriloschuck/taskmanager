@@ -36,22 +36,17 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .filter(user -> !user.isDeleted())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    }
+
     public User updateUser(Long id, UserUpdateDTO updateDTO) {
         User user = getUserById(id);
 
         if (updateDTO.getName() != null && !updateDTO.getName().isBlank()) {
             user.setName(updateDTO.getName());
-        }
-
-        if (updateDTO.getEmail() != null && !updateDTO.getEmail().isBlank() && !updateDTO.getEmail().equals(user.getEmail())) {
-            if (userRepository.findByEmail(updateDTO.getEmail()).isPresent()) {
-                throw new DuplicateEmailException("Email already exists");
-            }
-            user.setEmail(updateDTO.getEmail());
-        }
-
-        if (updateDTO.getPassword() != null && !updateDTO.getPassword().isBlank()) {
-            user.setPasswordHash(passwordEncoder.encode(updateDTO.getPassword()));
         }
 
         return userRepository.save(user);
