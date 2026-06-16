@@ -2,13 +2,15 @@ package com.unisinos.taskmanager.service;
 
 import com.unisinos.taskmanager.dto.UserRegisterDTO;
 import com.unisinos.taskmanager.dto.UserUpdateDTO;
-import com.unisinos.taskmanager.entity.User;
 import com.unisinos.taskmanager.exception.DuplicateEmailException;
 import com.unisinos.taskmanager.exception.UserNotFoundException;
+import com.unisinos.taskmanager.model.User;
 import com.unisinos.taskmanager.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -18,31 +20,32 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User createUser(UserRegisterDTO registerDTO) {
-        if (userRepository.findByEmail(registerDTO.getEmail()).isPresent()) {
+      if (userRepository.findByEmailAndDeletedFalse(registerDTO.getEmail()).isPresent()) {
             throw new DuplicateEmailException("Email already exists");
         }
 
-        User user = new User();
-        user.setName(registerDTO.getName());
-        user.setEmail(registerDTO.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(registerDTO.getPassword()));
+        User user = User.builder()
+                .name(registerDTO.getName())
+                .email(registerDTO.getEmail())
+                .passwordHash(passwordEncoder.encode(registerDTO.getPassword()))
+                .deleted(false)
+                .build();
 
         return userRepository.save(user);
     }
 
-    public User getUserById(Long id) {
+    public User getUserById(UUID id) {
         return userRepository.findById(id)
                 .filter(user -> !user.isDeleted())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
     public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .filter(user -> !user.isDeleted())
+        return userRepository.findByEmailAndDeletedFalse(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
-    public User updateUser(Long id, UserUpdateDTO updateDTO) {
+    public User updateUser(UUID id, UserUpdateDTO updateDTO) {
         User user = getUserById(id);
 
         if (updateDTO.getName() != null && !updateDTO.getName().isBlank()) {
@@ -52,7 +55,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void deleteUser(Long id) {
+    public void deleteUser(UUID id) {
         User user = getUserById(id);
         user.setDeleted(true);
         userRepository.save(user);

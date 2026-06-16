@@ -35,9 +35,8 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByEmail(username)
-                .filter(user -> !user.isDeleted())
-                .map(user -> new User(
+        return username -> userRepository.findByEmailAndDeletedFalse(username)
+                .map(user -> new org.springframework.security.core.userdetails.User(
                         user.getEmail(),
                         user.getPasswordHash(),
                         Collections.emptyList()

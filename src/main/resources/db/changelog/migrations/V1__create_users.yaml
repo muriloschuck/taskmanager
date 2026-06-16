@@ -40,3 +40,9 @@ databaseChangeLog:
                   defaultValueComputed: NOW()
                   constraints:
                     nullable: false
+              - column:
+                  name: deleted
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
