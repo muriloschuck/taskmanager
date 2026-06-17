@@ -2,7 +2,10 @@ package com.unisinos.taskmanager.controller;
 
 import com.unisinos.taskmanager.dto.AuthResponseDTO;
 import com.unisinos.taskmanager.dto.LoginRequestDTO;
+import com.unisinos.taskmanager.model.BlacklistedToken;
+import com.unisinos.taskmanager.repository.BlacklistedTokenRepository;
 import com.unisinos.taskmanager.security.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
+    private final BlacklistedTokenRepository blacklistedTokenRepository;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
@@ -38,9 +42,17 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        // Logout is handled client-side by deleting the JWT token.
-        // If stateful token blacklisting was required, we would implement it here.
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        final String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().build();
+        }
+        String jwt = authHeader.substring(7);
+        // Store the raw token in blacklist
+        if (!blacklistedTokenRepository.existsByToken(jwt)) {
+            BlacklistedToken blacklisted = BlacklistedToken.builder().token(jwt).build();
+            blacklistedTokenRepository.save(blacklisted);
+        }
+        return ResponseEntity.ok().build();
     }
 }

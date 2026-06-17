@@ -42,10 +42,10 @@ public class JwtService {
     ) {
         return Jwts
                 .builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24)) // 24 hours
+                .claims(extraClaims)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24)) // 24 hours
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -61,6 +61,18 @@ public class JwtService {
 
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
+    }
+
+    /**
+     * Public wrapper to check expiration for external components (e.g. cleanup tasks)
+     */
+    public boolean isTokenExpiredPublic(String token) {
+        try {
+            return isTokenExpired(token);
+        } catch (Exception e) {
+            // If token cannot be parsed, consider it expired for cleanup purposes
+            return true;
+        }
     }
 
     private Claims extractAllClaims(String token) {

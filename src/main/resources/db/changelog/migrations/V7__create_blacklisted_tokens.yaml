@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 7
+      author: taskmanager
+      changes:
+        - createTable:
+            tableName: blacklisted_tokens
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: token
+                  type: text
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_blacklisted_tokens_token
+            tableName: blacklisted_tokens
+            columns:
+              - column:
+                  name: token
+

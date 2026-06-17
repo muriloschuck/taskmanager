@@ -17,3 +17,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/migrations/V6__create_indexes.yaml
       relativeToChangelogFile: false
+  - include:
+      file: db/changelog/migrations/V7__create_blacklisted_tokens.yaml
+      relativeToChangelogFile: false
