@@ -52,7 +52,7 @@ class TaskCommentServiceTest {
         TaskCommentCreateDTO dto = TaskCommentCreateDTO.builder().text("Nice work!").build();
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(member));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(member));
         when(taskCommentRepository.save(any(TaskComment.class))).thenAnswer(inv -> {
             TaskComment c = inv.getArgument(0);
             c.setId(UUID.randomUUID());
@@ -89,7 +89,7 @@ class TaskCommentServiceTest {
         TaskCommentCreateDTO dto = TaskCommentCreateDTO.builder().text("Comment").build();
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.empty());
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> taskCommentService.addComment(taskId, dto, requesterId, null))
                 .isInstanceOf(ForbiddenException.class);

@@ -104,7 +104,7 @@ class BoardServiceTest {
         BoardMember m1 = BoardMember.builder().board(board1).build();
         BoardMember m2 = BoardMember.builder().board(board2).build();
 
-        when(boardMemberRepository.findByUserId(userId)).thenReturn(List.of(m1, m2));
+        when(boardMemberRepository.findByUser_Id(userId)).thenReturn(List.of(m1, m2));
 
         List<Board> result = boardService.getUserBoards(userId);
 
@@ -114,7 +114,7 @@ class BoardServiceTest {
     @Test
     void getUserBoards_whenNoMemberships_returnsEmptyList() {
         UUID userId = UUID.randomUUID();
-        when(boardMemberRepository.findByUserId(userId)).thenReturn(Collections.emptyList());
+        when(boardMemberRepository.findByUser_Id(userId)).thenReturn(Collections.emptyList());
 
         List<Board> result = boardService.getUserBoards(userId);
 
@@ -131,8 +131,8 @@ class BoardServiceTest {
         Board board = buildBoard(boardId, owner);
 
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
-        when(taskRepository.findByBoardId(boardId)).thenReturn(Collections.emptyList());
-        when(boardMemberRepository.findByBoardId(boardId)).thenReturn(Collections.emptyList());
+        when(taskRepository.findByBoard_Id(boardId)).thenReturn(Collections.emptyList());
+        when(boardMemberRepository.findByBoard_Id(boardId)).thenReturn(Collections.emptyList());
 
         boardService.deleteBoard(boardId, ownerId);
 
@@ -175,9 +175,9 @@ class BoardServiceTest {
         Board board = Board.builder().id(boardId).name("Board").build();
 
         BoardMember requesterMember = buildMember(boardId, requesterId, BoardRole.OWNER);
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
         when(userRepository.findByEmailAndDeletedFalse("new@test.com")).thenReturn(Optional.of(newUser));
-        when(boardMemberRepository.existsByBoardIdAndUserId(boardId, newUserId)).thenReturn(false);
+        when(boardMemberRepository.existsByBoard_IdAndUser_Id(boardId, newUserId)).thenReturn(false);
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(boardMemberRepository.save(any(BoardMember.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -192,7 +192,7 @@ class BoardServiceTest {
         UUID requesterId = UUID.randomUUID();
 
         BoardMember requesterMember = buildMember(boardId, requesterId, BoardRole.MEMBER);
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
 
         assertThatThrownBy(() -> boardService.addMember(boardId, "new@test.com", requesterId))
                 .isInstanceOf(ForbiddenException.class);
@@ -204,7 +204,7 @@ class BoardServiceTest {
         UUID requesterId = UUID.randomUUID();
 
         BoardMember requesterMember = buildMember(boardId, requesterId, BoardRole.OWNER);
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
         when(userRepository.findByEmailAndDeletedFalse("nonexist@test.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> boardService.addMember(boardId, "nonexist@test.com", requesterId))
@@ -219,9 +219,9 @@ class BoardServiceTest {
         User existingUser = User.builder().id(existingUserId).email("exists@test.com").deleted(false).build();
 
         BoardMember requesterMember = buildMember(boardId, requesterId, BoardRole.OWNER);
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
         when(userRepository.findByEmailAndDeletedFalse("exists@test.com")).thenReturn(Optional.of(existingUser));
-        when(boardMemberRepository.existsByBoardIdAndUserId(boardId, existingUserId)).thenReturn(true);
+        when(boardMemberRepository.existsByBoard_IdAndUser_Id(boardId, existingUserId)).thenReturn(true);
 
         assertThatThrownBy(() -> boardService.addMember(boardId, "exists@test.com", requesterId))
                 .isInstanceOf(ResponseStatusException.class)
@@ -239,8 +239,8 @@ class BoardServiceTest {
         BoardMember requesterMember = buildMember(boardId, requesterId, BoardRole.OWNER);
         BoardMember targetMember = buildMember(boardId, targetId, BoardRole.MEMBER);
 
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, targetId)).thenReturn(Optional.of(targetMember));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, targetId)).thenReturn(Optional.of(targetMember));
 
         boardService.removeMember(boardId, targetId, requesterId);
 
@@ -254,8 +254,8 @@ class BoardServiceTest {
         UUID targetId = UUID.randomUUID();
 
         BoardMember requesterMember = buildMember(boardId, requesterId, BoardRole.OWNER);
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, targetId)).thenReturn(Optional.empty());
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(requesterMember));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, targetId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> boardService.removeMember(boardId, targetId, requesterId))
                 .isInstanceOf(ResponseStatusException.class);
