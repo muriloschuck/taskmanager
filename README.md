@@ -44,6 +44,7 @@ API RESTful para um **sistema de gestão de tarefas colaborativas**, permitindo:
 | **Build** | Maven 3.9 |
 | **Infra** | Docker Compose |
 | **Utilities** | Lombok | 1.18.46 |
+| **Testes** | JUnit 5 + Mockito |
 
 ---
 
@@ -300,10 +301,10 @@ SELECT * FROM databasechangelog;  # Vê migrations aplicadas
 
 Use a collection do Bruno em `docs/collection/` para testar todos os endpoints.
 
-a. Instale o [Bruno](https://www.usebruno.com/) (cliente API open-source)
-b. Abra o Bruno e clique em "Open Collection"
-c. Navegue até `docs/collection/` no projeto
-d. A collection será carregada com todos os endpoints configurados
+- a. Instale o [Bruno](https://www.usebruno.com/) (cliente API open-source)
+- b. Abra o Bruno e clique em "Open Collection"
+- c. Navegue até `docs/collection/` no projeto
+- d. A collection será carregada com todos os endpoints configurados
 
 ### Parar tudo
 
