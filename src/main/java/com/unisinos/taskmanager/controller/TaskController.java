@@ -5,6 +5,7 @@ import com.unisinos.taskmanager.dto.TaskResponseDTO;
 import com.unisinos.taskmanager.dto.TaskUpdateDTO;
 import com.unisinos.taskmanager.model.Task;
 import com.unisinos.taskmanager.model.User;
+import com.unisinos.taskmanager.model.enums.TaskPriority;
 import com.unisinos.taskmanager.model.enums.TaskStatus;
 import com.unisinos.taskmanager.repository.UserRepository;
 import com.unisinos.taskmanager.service.TaskService;
@@ -42,10 +43,11 @@ public class TaskController {
     public ResponseEntity<List<TaskResponseDTO>> getTasks(
             @RequestParam(value = "boardId", required = false) UUID boardId,
             @RequestParam(value = "status", required = false) String statusStr,
+            @RequestParam(value = "priority", required = false) String priorityStr,
             @RequestParam(value = "assignedUserId", required = false) UUID assignedUserId,
+            @RequestParam(value = "dueDate", required = false) java.time.LocalDate dueDate,
             @RequestParam(value = "search", required = false) String search
     ) {
-        // convert status string to enum if present
         TaskStatus status = null;
         if (statusStr != null && !statusStr.isBlank()) {
             try {
@@ -56,7 +58,17 @@ public class TaskController {
             }
         }
 
-        List<Task> tasks = taskService.getFilteredTasks(boardId, status, assignedUserId, search);
+        TaskPriority priority = null;
+        if (priorityStr != null && !priorityStr.isBlank()) {
+            try {
+                priority = TaskPriority.valueOf(priorityStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid task priority filter: '{}'", priorityStr);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid priority");
+            }
+        }
+
+        List<Task> tasks = taskService.getFilteredTasks(boardId, status, priority, assignedUserId, dueDate, search);
         List<TaskResponseDTO> dtos = tasks.stream().map(taskService::toDto).collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
