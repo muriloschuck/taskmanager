@@ -101,10 +101,8 @@ class BoardServiceTest {
         UUID userId = UUID.randomUUID();
         Board board1 = Board.builder().id(UUID.randomUUID()).name("Board 1").build();
         Board board2 = Board.builder().id(UUID.randomUUID()).name("Board 2").build();
-        BoardMember m1 = BoardMember.builder().board(board1).build();
-        BoardMember m2 = BoardMember.builder().board(board2).build();
 
-        when(boardMemberRepository.findByUser_Id(userId)).thenReturn(List.of(m1, m2));
+        when(boardRepository.findBoardsByMemberId(userId)).thenReturn(List.of(board1, board2));
 
         List<Board> result = boardService.getUserBoards(userId);
 
@@ -114,7 +112,7 @@ class BoardServiceTest {
     @Test
     void getUserBoards_whenNoMemberships_returnsEmptyList() {
         UUID userId = UUID.randomUUID();
-        when(boardMemberRepository.findByUser_Id(userId)).thenReturn(Collections.emptyList());
+        when(boardRepository.findBoardsByMemberId(userId)).thenReturn(Collections.emptyList());
 
         List<Board> result = boardService.getUserBoards(userId);
 
