@@ -282,6 +282,9 @@ class TaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
         when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(member));
         when(userRepository.findById(assignedId)).thenReturn(Optional.of(assigned));
+
+        when(boardMemberRepository.existsByBoard_IdAndUser_Id(boardId, assignedId)).thenReturn(true);
+
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Task result = taskService.updateTaskPartial(taskId, dto, requesterId);
