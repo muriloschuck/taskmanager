@@ -8,15 +8,11 @@
 ## Índice
 
 1. [Visão Geral](#-visão-geral)
-2. [Stack Tecnológica](#-stack-tecnológica)
+2. [Stack](#-stack)
 3. [Arquitetura](#-arquitetura)
 4. [Modelagem de Dados](#-modelagem-de-dados)
 5. [API Endpoints](#-api-endpoints)
 6. [Como Rodar](#-como-rodar)
-7. [Autenticação](#-autenticação)
-8. [Exemplos de Uso](#-exemplos-de-uso)
-9. [Estrutura do Projeto](#-estrutura-do-projeto)
-10. [Decisões Técnicas](#-decisões-técnicas)
 
 ---
 
