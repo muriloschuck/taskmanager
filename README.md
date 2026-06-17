@@ -136,72 +136,42 @@ block-beta
   style DB         fill:#37474F,stroke:#607D8B,stroke-width:4px,color:#ECEFF1
 ```
 
-### Fluxo de Requisição - Exemplo Real: Criar Task
+### Fluxo de Usuário - Exemplo Completo
 
-**Endpoint:** `POST /api/v1/tasks`
+**Cenário:** Usuário faz login, cria uma task e faz logout.
 
 ```mermaid
 sequenceDiagram
-    actor C as Cliente
-    participant F as JwtAuthenticationFilter
-    participant CT as TaskController
-    participant U as SecurityUtils
-    participant UR as UserRepository
-    participant S as TaskService
-    participant BMR as BoardMemberRepository
-    participant BR as BoardRepository
-    participant TR as TaskRepository
-    participant DB as PostgreSQL
+    actor User as Usuário
+    participant API as Task Manager API
  
-    C->>F: POST /api/v1/tasks + Bearer token + TaskCreateDTO
-    F->>F: valida JWT e extrai email
-    F->>CT: request autenticada
+    Note over User,API: 1. AUTENTICAÇÃO
+    User->>API: POST /api/v1/auth/login<br/>{email: "user@example.com", password: "senha123"}
+    API-->>User: 200 OK<br/>{token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}
     
-    CT->>CT: @Valid TaskCreateDTO (title, boardId, etc)
-    CT->>U: getAuthenticatedRequester()
-    U->>UR: findByEmailAndDeletedFalse(email)
-    UR->>DB: SELECT * FROM users WHERE email=? AND deleted=false
-    DB-->>UR: User entity
-    UR-->>U: User
-    U-->>CT: User requester
+    Note over User: Armazena JWT token
     
-    CT->>S: createTask(dto, requesterId)
+    Note over User,API: 2. CRIAR TASK
+    User->>API: POST /api/v1/tasks<br/>Authorization: Bearer {token}<br/>{title: "Implementar login", boardId: "uuid", priority: "HIGH"}
+    API-->>User: 201 Created<br/>{id: "uuid", title: "Implementar login", status: "PENDING", ...}
     
-    Note over S: Validação de Membership
-    S->>BMR: findByBoardIdAndUserId(boardId, requesterId)
-    BMR->>DB: SELECT * FROM board_members WHERE board_id=? AND user_id=?
-    DB-->>BMR: BoardMember ou vazio
-    BMR-->>S: Optional<BoardMember>
+    Note over User,API: 3. LISTAR TASKS DO BOARD
+    User->>API: GET /api/v1/tasks?boardId={uuid}<br/>Authorization: Bearer {token}
+    API-->>User: 200 OK<br/>[{task1}, {task2}, {task3}]
     
-    alt Não é membro
-        S-->>CT: throw ForbiddenException
-        CT-->>C: 403 Forbidden
-    else É membro
-        Note over S: Buscar Board
-        S->>BR: findById(boardId)
-        BR->>DB: SELECT * FROM boards WHERE id=?
-        DB-->>BR: Board entity
-        BR-->>S: Board
-        
-        Note over S: Buscar Assigned User (se houver)
-        opt assignedUserId presente
-            S->>UR: findById(assignedUserId)
-            UR->>DB: SELECT * FROM users WHERE id=?
-            DB-->>UR: User entity
-            UR-->>S: User assigned
-        end
-        
-        Note over S: Criar Task
-        S->>S: Task.builder().title().board().assignedUser()...
-        S->>TR: save(task)
-        TR->>DB: INSERT INTO tasks VALUES(...)
-        DB-->>TR: Task salva com ID
-        TR-->>S: Task
-        
-        S-->>CT: Task criada
-        CT->>CT: toDto(task) → TaskResponseDTO
-        CT-->>C: 201 Created + TaskResponseDTO JSON
-    end
+    Note over User,API: 4. ATUALIZAR STATUS DA TASK
+    User->>API: PATCH /api/v1/tasks/{id}<br/>Authorization: Bearer {token}<br/>{status: "IN_PROGRESS"}
+    API-->>User: 200 OK<br/>{id: "uuid", status: "IN_PROGRESS", updatedAt: "2026-06-16T..."}
+    
+    Note over User,API: 5. ADICIONAR COMENTÁRIO
+    User->>API: POST /api/v1/tasks/{id}/comments<br/>Authorization: Bearer {token}<br/>{text: "Iniciando implementação"}
+    API-->>User: 201 Created<br/>{id: "uuid", text: "Iniciando...", authorName: "João"}
+    
+    Note over User,API: 6. LOGOUT
+    User->>API: POST /api/v1/auth/logout<br/>Authorization: Bearer {token}
+    API-->>User: 204 No Content
+    
+    Note over User: Remove token (client-side)
 ```
 
 **Possíveis Respostas de Erro:**
