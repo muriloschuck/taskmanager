@@ -18,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -55,9 +54,7 @@ public class BoardService {
     }
 
     public List<Board> getUserBoards(UUID userId) {
-        return boardMemberRepository.findByUserId(userId).stream()
-                .map(BoardMember::getBoard)
-                .collect(Collectors.toList());
+        return boardRepository.findBoardsByMemberId(userId);
     }
 
     public void deleteBoard(UUID boardId, UUID requesterId) {
@@ -69,21 +66,25 @@ public class BoardService {
         }
 
         // delete tasks
-        taskRepository.deleteAll(taskRepository.findByBoardId(boardId));
+        taskRepository.deleteAll(taskRepository.findByBoard_Id(boardId));
 
         // delete members
-        boardMemberRepository.deleteAll(boardMemberRepository.findByBoardId(boardId));
+        boardMemberRepository.deleteAll(boardMemberRepository.findByBoard_Id(boardId));
 
         boardRepository.delete(board);
     }
 
     public void requireMember(UUID boardId, UUID requesterId) {
-        boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
+        boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found"));
+        boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)
                 .orElseThrow(() -> new ForbiddenException("Access denied"));
     }
 
     public List<BoardMember> listMembers(UUID boardId) {
-        return boardMemberRepository.findByBoardId(boardId);
+        boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found"));
+        return boardMemberRepository.findByBoard_Id(boardId);
     }
 
     /**
@@ -96,7 +97,7 @@ public class BoardService {
         User userToAdd = userRepository.findByEmailAndDeletedFalse(emailToAdd)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (boardMemberRepository.existsByBoardIdAndUserId(boardId, userToAdd.getId())) {
+        if (boardMemberRepository.existsByBoard_IdAndUser_Id(boardId, userToAdd.getId())) {
             log.warn("Conflict: user {} is already a member of board {}", emailToAdd, boardId);
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already a member of the board");
         }
@@ -120,7 +121,7 @@ public class BoardService {
     public void removeMember(UUID boardId, UUID userIdToRemove, UUID requesterId) {
         requireOwnerOrAdmin(boardId, requesterId);
 
-        BoardMember target = boardMemberRepository.findByBoardIdAndUserId(boardId, userIdToRemove)
+        BoardMember target = boardMemberRepository.findByBoard_IdAndUser_Id(boardId, userIdToRemove)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
 
         boardMemberRepository.delete(target);
@@ -128,7 +129,7 @@ public class BoardService {
     }
 
     private void requireOwnerOrAdmin(UUID boardId, UUID requesterId) {
-        BoardMember requesterMember = boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
+        BoardMember requesterMember = boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)
                 .orElseThrow(() -> {
                     log.warn("Access denied: user {} is not a member of board {}", requesterId, boardId);
                     return new ForbiddenException("Access denied");

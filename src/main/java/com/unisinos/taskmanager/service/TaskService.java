@@ -69,7 +69,7 @@ public class TaskService {
     public Task createTask(TaskCreateDTO dto, UUID requesterId) {
         // Verify requester is member of the board
         UUID boardId = dto.getBoardId();
-        boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
+        boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)
                 .orElseThrow(() -> {
                     log.warn("Forbidden: user {} is not a member of board {}", requesterId, boardId);
                     return new ForbiddenException("Only board members can create tasks");
@@ -108,7 +108,7 @@ public class TaskService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
 
         UUID boardId = task.getBoard().getId();
-        boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
+        boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)
                 .orElseThrow(() -> new ForbiddenException("Only board members can delete tasks"));
 
         taskRepository.delete(task);
@@ -120,7 +120,7 @@ public class TaskService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
 
         UUID boardId = task.getBoard().getId();
-        boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
+        boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)
                 .orElseThrow(() -> new ForbiddenException("Only board members can update tasks"));
 
         if (dto.getTitle() != null) {
