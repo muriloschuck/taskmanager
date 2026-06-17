@@ -53,93 +53,68 @@ API RESTful para um **sistema de gestão de tarefas colaborativas**, permitindo:
 ### Arquitetura em Camadas
 
 ```mermaid
-block-beta
-  columns 1
- 
-  space:1
-  CLIENT["🌐 Cliente HTTP (Postman, cURL, Frontend)"]
-  space:1
- 
-  blockArrowId1<["⬇️&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⬇️"]>(down)
- 
-  space:1
-  SECURITY["🔒 Security Layer<br/><br/>JwtAuthenticationFilter<br/>SecurityConfig"]
-  space:1
- 
-  blockArrowId2<["⬇️&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⬇️"]>(down)
- 
-  space:1
-  block:CONTROLLERS
-    columns 1
-    CTITLE["📡 Controllers (@RestController)"]
-    space:1
-    CTL1["AuthController · UserController"]
-    CTL2["BoardController · TaskController · TaskCommentController"]
-  end
-  space:1
- 
-  blockArrowId3<["⬇️&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⬇️"]>(down)
- 
-  space:1
-  block:SERVICES
-    columns 1
-    STITLE["⚙️ Services (@Service)"]
-    space:1
-    SVC1["UserService · BoardService · TaskService · TaskCommentService"]
-  end
-  space:1
- 
-  blockArrowId4<["⬇️&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⬇️"]>(down)
- 
-  space:1
-  block:REPOSITORIES
-    columns 1
-    RTITLE["💾 Repositories (JpaRepository)"]
-    space:1
-    REPO1["UserRepository · BoardRepository · BoardMemberRepository"]
-    REPO2["TaskRepository · TaskCommentRepository"]
-  end
-  space:1
- 
-  blockArrowId5<["⬇️&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⬇️"]>(down)
- 
-  space:1
-  block:MODELS
-    columns 1
-    MTITLE["📦 Entities (@Entity)"]
-    space:1
-    MDL1["User · Board · BoardMember · Task · TaskComment"]
-  end
-  space:1
- 
-  blockArrowId6<["⬇️&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⬇️"]>(down)
- 
-  space:1
-  DB[("🗄️ PostgreSQL 16<br/><br/>Database: taskmanager")]
-  space:1
- 
-  style CLIENT     fill:#E3F2FD,stroke:#1976D2,stroke-width:3px,color:#0D47A1
-  style SECURITY   fill:#FFF3E0,stroke:#F57C00,stroke-width:3px,color:#E65100
-  style CONTROLLERS fill:#F3E5F5,stroke:#7B1FA2,stroke-width:3px,color:#4A148C
-  style CTITLE     fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#4A148C
-  style CTL1       fill:#F3E5F5,stroke:#BA68C8,stroke-width:2px,color:#4A148C
-  style CTL2       fill:#F3E5F5,stroke:#BA68C8,stroke-width:2px,color:#4A148C
-  style SERVICES   fill:#E8F5E9,stroke:#388E3C,stroke-width:3px,color:#1B5E20
-  style STITLE     fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#1B5E20
-  style SVC1       fill:#E8F5E9,stroke:#66BB6A,stroke-width:2px,color:#1B5E20
-  style REPOSITORIES fill:#E1F5FE,stroke:#0288D1,stroke-width:3px,color:#01579B
-  style RTITLE     fill:#B3E5FC,stroke:#0288D1,stroke-width:2px,color:#01579B
-  style REPO1      fill:#E1F5FE,stroke:#4FC3F7,stroke-width:2px,color:#01579B
-  style REPO2      fill:#E1F5FE,stroke:#4FC3F7,stroke-width:2px,color:#01579B
-  style MODELS     fill:#FFF9C4,stroke:#F9A825,stroke-width:3px,color:#F57F17
-  style MTITLE     fill:#FFF59D,stroke:#F9A825,stroke-width:2px,color:#F57F17
-  style MDL1       fill:#FFF9C4,stroke:#FFD54F,stroke-width:2px,color:#F57F17
-  style DB         fill:#37474F,stroke:#607D8B,stroke-width:4px,color:#ECEFF1
+flowchart TD
+    Client["Cliente HTTP"]
+
+    subgraph Security["Security Layer"]
+        JWT["JwtAuthenticationFilter"]
+        SC["SecurityConfig"]
+    end
+
+    subgraph Controllers["Controllers"]
+        AC["AuthController"]
+        UC["UserController"]
+        BC["BoardController"]
+        TC["TaskController"]
+        TCC["TaskCommentController"]
+    end
+
+    subgraph Services["Services"]
+        US["UserService"]
+        BS["BoardService"]
+        TS["TaskService"]
+        TCS["TaskCommentService"]
+    end
+
+    subgraph Repositories["Repositories"]
+        UR["UserRepository"]
+        BR["BoardRepository"]
+        BMR["BoardMemberRepository"]
+        TR["TaskRepository"]
+        TCR["TaskCommentRepository"]
+    end
+
+    subgraph Entities["Entities"]
+        E["User · Board · BoardMember<br/>Task · TaskComment"]
+    end
+
+    DB[("PostgreSQL 16")]
+
+    Client --> Security
+    Security --> Controllers
+    Controllers --> Services
+    Services --> Repositories
+    Repositories --> Entities
+    Entities --> DB
+
+    classDef clientStyle fill:#E3F2FD,stroke:#1976D2,stroke-width:2px,color:#0D47A1
+    classDef securityStyle fill:#FFF3E0,stroke:#F57C00,stroke-width:2px,color:#E65100
+    classDef controllerStyle fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px,color:#4A148C
+    classDef serviceStyle fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#1B5E20
+    classDef repoStyle fill:#E1F5FE,stroke:#0288D1,stroke-width:2px,color:#01579B
+    classDef entityStyle fill:#FFF9C4,stroke:#F9A825,stroke-width:2px,color:#F57F17
+    classDef dbStyle fill:#37474F,stroke:#607D8B,stroke-width:3px,color:#ECEFF1
+
+    class Client clientStyle
+    class JWT,SC securityStyle
+    class AC,UC,BC,TC,TCC controllerStyle
+    class US,BS,TS,TCS serviceStyle
+    class UR,BR,BMR,TR,TCR repoStyle
+    class E entityStyle
+    class DB dbStyle
 ```
 
-### Fluxo de Usuário - Exemplo Completo
-
-**Cenário:** Usuário faz login, cria uma task e faz logout.
+### Fluxo
 
 ```mermaid
 sequenceDiagram
@@ -181,70 +156,64 @@ sequenceDiagram
 
 ### Diagrama ER
 
+```mermaid
+erDiagram
+    USERS ||--o{ BOARDS : "owns"
+    USERS ||--o{ BOARD_MEMBERS : "participates"
+    USERS ||--o{ TASKS : "assigned_to"
+    USERS ||--o{ TASK_COMMENTS : "authors"
+    BOARDS ||--o{ BOARD_MEMBERS : "has"
+    BOARDS ||--o{ TASKS : "contains"
+    TASKS ||--o{ TASK_COMMENTS : "receives"
+
+    USERS {
+        UUID id PK
+        string email UK
+        string password_hash
+        string name
+        boolean deleted
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    BOARDS {
+        UUID id PK
+        string name
+        string description
+        UUID owner_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    BOARD_MEMBERS {
+        UUID id PK
+        UUID board_id FK
+        UUID user_id FK
+        enum role "OWNER, ADMIN, MEMBER"
+        timestamp joined_at
+    }
+
+    TASKS {
+        UUID id PK
+        string title
+        string description
+        enum status "PENDING, IN_PROGRESS, DONE, CANCELLED"
+        enum priority "LOW, MEDIUM, HIGH"
+        timestamp due_date
+        UUID board_id FK
+        UUID assigned_user_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    TASK_COMMENTS {
+        UUID id PK
+        UUID task_id FK
+        UUID user_id FK
+        text content
+        timestamp created_at
+    }
 ```
-users (UUID id, email UK, password_hash, name, deleted, timestamps)
-  │
-  ├──< boards (UUID id, name, description, owner_id FK → users)
-  │     │
-  │     ├──< board_members (UUID id, board_id FK, user_id FK, role ENUM, joined_at)
-  │     │                    UK(board_id, user_id)
-  │     │
-  │     └──< tasks (UUID id, title, description, status ENUM, priority ENUM,
-  │               due_date, board_id FK, assigned_user_id FK → users, timestamps)
-  │           │
-  │           └──< task_comments (UUID id, task_id FK, user_id FK, content, created_at)
-  │
-  └──< (relationships: owner, board member, task assignee, comment author)
-```
-
-### Tabelas e Relacionamentos
-
-#### **users**
-- **PK:** `id` (UUID)
-- **UK:** `email`
-- **Campos:** `password_hash`, `name`, `deleted` (boolean), `created_at`, `updated_at`
-- **Soft Delete:** Campo `deleted = true` ao invés de remover fisicamente
-
-#### **boards**
-- **PK:** `id` (UUID)
-- **FK:** `owner_id` → `users.id`
-- **Campos:** `name`, `description`, `created_at`, `updated_at`
-
-#### **board_members** (Junction Table)
-- **PK:** `id` (UUID)
-- **FK:** `board_id` → `boards.id` (CASCADE DELETE)
-- **FK:** `user_id` → `users.id`
-- **UK:** `(board_id, user_id)` - impede duplicatas
-- **Campos:** `role` (ENUM: OWNER, ADMIN, MEMBER), `joined_at`
-
-#### **tasks**
-- **PK:** `id` (UUID)
-- **FK:** `board_id` → `boards.id` (CASCADE DELETE)
-- **FK:** `assigned_user_id` → `users.id` (nullable)
-- **Campos:** `title`, `description`, `status` (ENUM), `priority` (ENUM), `due_date`, `created_at`, `updated_at`
-
-**Enums:**
-- `TaskStatus`: PENDING, IN_PROGRESS, DONE, CANCELLED
-- `TaskPriority`: LOW, MEDIUM, HIGH
-
-#### **task_comments**
-- **PK:** `id` (UUID)
-- **FK:** `task_id` → `tasks.id` (CASCADE DELETE)
-- **FK:** `user_id` → `users.id`
-- **Campos:** `content` (text), `created_at`
-
-### Índices (V6 migration)
-
-Para otimização de queries frequentes:
-- `idx_tasks_board_id` em `tasks.board_id`
-- `idx_tasks_assigned_user_id` em `tasks.assigned_user_id`
-- `idx_tasks_status` em `tasks.status`
-- `idx_tasks_priority` em `tasks.priority`
-- `idx_bm_board_id` em `board_members.board_id`
-- `idx_bm_user_id` em `board_members.user_id`
-- `idx_comments_task_id` em `task_comments.task_id`
-
----
 
 ## Como Rodar
 
