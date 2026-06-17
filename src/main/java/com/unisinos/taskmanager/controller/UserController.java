@@ -7,6 +7,7 @@ import com.unisinos.taskmanager.model.User;
 import com.unisinos.taskmanager.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -35,7 +37,9 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponseDTO> registerUser(@Valid @RequestBody UserRegisterDTO registerDTO) {
+        log.info("Registering new user with email: {}", registerDTO.getEmail());
         User user = userService.createUser(registerDTO);
+        log.info("User registered successfully: id={}", user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(user));
     }
 
@@ -47,6 +51,7 @@ public class UserController {
         String currentPrincipalName = authentication.getName();
         User targetUser = userService.getUserById(id);
         if (!targetUser.getEmail().equals(currentPrincipalName)) {
+            log.warn("Ownership denied: user {} tried to access user {}", currentPrincipalName, id);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Cannot manipulate other users' data.");
         }
     }
@@ -69,6 +74,7 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         verifyOwnership(id);
         userService.deleteUser(id);
+        log.info("User soft-deleted: {}", id);
         return ResponseEntity.noContent().build();
     }
 }

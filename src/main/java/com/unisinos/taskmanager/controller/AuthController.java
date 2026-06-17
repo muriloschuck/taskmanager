@@ -8,6 +8,7 @@ import com.unisinos.taskmanager.security.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -30,6 +32,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
+        log.info("Login attempt for: {}", request.getEmail());
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -38,6 +41,7 @@ public class AuthController {
         );
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String jwtToken = jwtService.generateToken(userDetails);
+        log.info("Login successful for: {}", request.getEmail());
         return ResponseEntity.ok(new AuthResponseDTO(jwtToken));
     }
 
@@ -45,14 +49,15 @@ public class AuthController {
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         final String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.warn("Logout attempt without valid Authorization header");
             return ResponseEntity.badRequest().build();
         }
         String jwt = authHeader.substring(7);
-        // Store the raw token in blacklist
         if (!blacklistedTokenRepository.existsByToken(jwt)) {
             BlacklistedToken blacklisted = BlacklistedToken.builder().token(jwt).build();
             blacklistedTokenRepository.save(blacklisted);
         }
+        log.info("User logged out, token blacklisted");
         return ResponseEntity.ok().build();
     }
 }

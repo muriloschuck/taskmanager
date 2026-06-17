@@ -10,6 +10,7 @@ import com.unisinos.taskmanager.repository.BoardMemberRepository;
 import com.unisinos.taskmanager.repository.TaskCommentRepository;
 import com.unisinos.taskmanager.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.UUID;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TaskCommentService {
@@ -47,10 +49,12 @@ public class TaskCommentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 
         if (!comment.getUser().getId().equals(requesterId)) {
+            log.warn("Forbidden: user {} tried to delete comment {} (author: {})", requesterId, commentId, comment.getUser().getId());
             throw new ForbiddenException("You can only delete your own comments");
         }
 
         taskCommentRepository.delete(comment);
+        log.debug("Comment deleted: {}", commentId);
     }
 
     public List<TaskComment> findByTaskId(UUID taskId) {

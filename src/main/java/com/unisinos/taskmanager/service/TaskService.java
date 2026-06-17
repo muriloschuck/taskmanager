@@ -16,6 +16,7 @@ import com.unisinos.taskmanager.repository.TaskRepository;
 import com.unisinos.taskmanager.repository.UserRepository;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TaskService {
@@ -68,7 +70,10 @@ public class TaskService {
         // Verify requester is member of the board
         UUID boardId = dto.getBoardId();
         boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
-                .orElseThrow(() -> new ForbiddenException("Only board members can create tasks"));
+                .orElseThrow(() -> {
+                    log.warn("Forbidden: user {} is not a member of board {}", requesterId, boardId);
+                    return new ForbiddenException("Only board members can create tasks");
+                });
 
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found"));
@@ -93,7 +98,9 @@ public class TaskService {
                 .assignedUser(assigned)
                 .build();
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        log.info("Task created: id={}, board={}, title='{}'", saved.getId(), boardId, saved.getTitle());
+        return saved;
     }
 
     public void deleteTask(UUID taskId, UUID requesterId) {
@@ -105,6 +112,7 @@ public class TaskService {
                 .orElseThrow(() -> new ForbiddenException("Only board members can delete tasks"));
 
         taskRepository.delete(task);
+        log.info("Task deleted: id={}", taskId);
     }
 
     public Task updateTaskPartial(UUID taskId, TaskUpdateDTO dto, UUID requesterId) {

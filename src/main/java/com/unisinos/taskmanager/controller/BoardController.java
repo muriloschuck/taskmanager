@@ -9,6 +9,7 @@ import com.unisinos.taskmanager.service.BoardService;
 import com.unisinos.taskmanager.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/boards")
 @RequiredArgsConstructor
@@ -33,12 +35,14 @@ public class BoardController {
         User requester = SecurityUtils.getAuthenticatedRequester(userRepository);
 
         boardService.addMember(boardId, addMemberDTO.getEmail(), requester.getId());
+        log.info("Member {} added to board {}", addMemberDTO.getEmail(), boardId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping
     public ResponseEntity<BoardResponseDTO> createBoard(@Valid @RequestBody BoardCreateDTO createDTO) {
         User requester = SecurityUtils.getAuthenticatedRequester(userRepository);
+        log.info("Creating board '{}' for user: {}", createDTO.getName(), requester.getId());
         Board created = boardService.createBoard(createDTO, requester.getId());
         BoardResponseDTO dto = BoardResponseDTO.builder()
                 .id(created.getId())
@@ -70,6 +74,7 @@ public class BoardController {
     public ResponseEntity<Void> deleteBoard(@PathVariable("id") UUID boardId) {
         User requester = SecurityUtils.getAuthenticatedRequester(userRepository);
         boardService.deleteBoard(boardId, requester.getId());
+        log.info("Board deleted: {}", boardId);
         return ResponseEntity.noContent().build();
     }
 
@@ -92,6 +97,7 @@ public class BoardController {
         User requester = SecurityUtils.getAuthenticatedRequester(userRepository);
 
         boardService.removeMember(boardId, userIdToRemove, requester.getId());
+        log.info("Member {} removed from board {}", userIdToRemove, boardId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -11,6 +11,7 @@ import com.unisinos.taskmanager.repository.BoardRepository;
 import com.unisinos.taskmanager.repository.TaskRepository;
 import com.unisinos.taskmanager.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,6 +20,7 @@ import java.util.UUID;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BoardService {
@@ -95,6 +97,7 @@ public class BoardService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (boardMemberRepository.existsByBoardIdAndUserId(boardId, userToAdd.getId())) {
+            log.warn("Conflict: user {} is already a member of board {}", emailToAdd, boardId);
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already a member of the board");
         }
 
@@ -108,6 +111,7 @@ public class BoardService {
                 .build();
 
         boardMemberRepository.save(newMember);
+        log.info("Member added: user {} to board {} as MEMBER", userToAdd.getId(), boardId);
     }
 
     /**
@@ -120,14 +124,19 @@ public class BoardService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
 
         boardMemberRepository.delete(target);
+        log.info("Member removed: user {} from board {}", userIdToRemove, boardId);
     }
 
     private void requireOwnerOrAdmin(UUID boardId, UUID requesterId) {
         BoardMember requesterMember = boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
-                .orElseThrow(() -> new ForbiddenException("Access denied"));
+                .orElseThrow(() -> {
+                    log.warn("Access denied: user {} is not a member of board {}", requesterId, boardId);
+                    return new ForbiddenException("Access denied");
+                });
 
         BoardRole role = requesterMember.getRole();
         if (role != BoardRole.OWNER && role != BoardRole.ADMIN) {
+            log.warn("Access denied: user {} is not OWNER/ADMIN of board {} (role: {})", requesterId, boardId, role);
             throw new ForbiddenException("Access denied");
         }
     }

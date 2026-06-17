@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import javax.crypto.SecretKey;
 
+@Slf4j
 @Service
 public class JwtService {
 
@@ -40,6 +42,7 @@ public class JwtService {
             Map<String, Object> extraClaims,
             UserDetails userDetails
     ) {
+        log.debug("JWT token generated for user: {}", userDetails.getUsername());
         return Jwts
                 .builder()
                 .claims(extraClaims)
@@ -70,7 +73,7 @@ public class JwtService {
         try {
             return isTokenExpired(token);
         } catch (Exception e) {
-            // If token cannot be parsed, consider it expired for cleanup purposes
+            log.warn("Failed to parse JWT token during expiration check", e);
             return true;
         }
     }

@@ -7,11 +7,13 @@ import com.unisinos.taskmanager.exception.UserNotFoundException;
 import com.unisinos.taskmanager.model.User;
 import com.unisinos.taskmanager.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -21,6 +23,7 @@ public class UserService {
 
     public User createUser(UserRegisterDTO registerDTO) {
       if (userRepository.findByEmailAndDeletedFalse(registerDTO.getEmail()).isPresent()) {
+            log.warn("Registration rejected: email already exists: {}", registerDTO.getEmail());
             throw new DuplicateEmailException("Email already exists");
         }
 
@@ -31,7 +34,9 @@ public class UserService {
                 .deleted(false)
                 .build();
 
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        log.info("User created: id={}, email={}", saved.getId(), saved.getEmail());
+        return saved;
     }
 
     public User getUserById(UUID id) {
@@ -59,5 +64,6 @@ public class UserService {
         User user = getUserById(id);
         user.setDeleted(true);
         userRepository.save(user);
+        log.info("User soft-deleted: id={}, email={}", id, user.getEmail());
     }
 }
