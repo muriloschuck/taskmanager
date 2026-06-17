@@ -77,7 +77,7 @@ class TaskServiceTest {
                 .status(TaskStatus.PENDING)
                 .build();
 
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(member));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(member));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
             Task t = inv.getArgument(0);
@@ -100,7 +100,7 @@ class TaskServiceTest {
 
         TaskCreateDTO dto = TaskCreateDTO.builder().title("Task").boardId(boardId).build();
 
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.empty());
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> taskService.createTask(dto, requesterId))
                 .isInstanceOf(ForbiddenException.class);
@@ -114,7 +114,7 @@ class TaskServiceTest {
 
         TaskCreateDTO dto = TaskCreateDTO.builder().title("Task").boardId(boardId).build();
 
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(member));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(member));
         when(boardRepository.findById(boardId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> taskService.createTask(dto, requesterId))
@@ -135,7 +135,7 @@ class TaskServiceTest {
                 .assignedUserId(assignedId)
                 .build();
 
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(member));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(member));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(userRepository.findById(assignedId)).thenReturn(Optional.empty());
 
@@ -156,7 +156,7 @@ class TaskServiceTest {
                 .assignedUserId(null)
                 .build();
 
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(member));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(member));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -179,7 +179,7 @@ class TaskServiceTest {
                 .priority(null)
                 .build();
 
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(member));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(member));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -201,7 +201,7 @@ class TaskServiceTest {
         BoardMember member = BoardMember.builder().id(UUID.randomUUID()).build();
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(member));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(member));
 
         taskService.deleteTask(taskId, requesterId);
 
@@ -226,7 +226,7 @@ class TaskServiceTest {
         Task task = buildTask(taskId, board);
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.empty());
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> taskService.deleteTask(taskId, requesterId))
                 .isInstanceOf(ForbiddenException.class);
@@ -247,7 +247,7 @@ class TaskServiceTest {
         TaskUpdateDTO dto = TaskUpdateDTO.builder().title("New Title").status(TaskStatus.IN_PROGRESS).build();
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(member));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(member));
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Task result = taskService.updateTaskPartial(taskId, dto, requesterId);
@@ -280,7 +280,7 @@ class TaskServiceTest {
                 .build();
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
-        when(boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)).thenReturn(Optional.of(member));
+        when(boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)).thenReturn(Optional.of(member));
         when(userRepository.findById(assignedId)).thenReturn(Optional.of(assigned));
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 

@@ -1,0 +1,478 @@
+opencollection: 1.0.0
+info:
+  name: Monday - TaskManager Completo - 1
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ''
+      port: ''
+      auth:
+        username: ''
+        password: ''
+      bypassProxy: ''
+  environments:
+    - name: Local
+      variables:
+        - name: jwt_token
+          value: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtdXJpbG9AdW5pc2lub3MuYnIiLCJpYXQiOjE3ODE2NjIyOTIsImV4cCI6MTc4MTY2MzczMn0.7RAILhevZgNF4_9BM65XZkKsKBy2UsiudN9YPUFaNMU
+items:
+  - info:
+      name: 2. Boards
+      type: folder
+      seq: 2
+    request:
+      auth: inherit
+    items:
+      - info:
+          name: Adicionar Membro ao Board
+          type: http
+          seq: 4
+        http:
+          method: POST
+          url: '{{baseUrl}}/api/v1/boards/:id/members'
+          params:
+            - name: id
+              value: BOARD_UUID_AQUI
+              type: path
+          body:
+            type: json
+            data: |-
+              {
+                "email": "colega@unisinos.br"
+              }
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Alterar Cargo do Membro
+          type: http
+          seq: 7
+        http:
+          method: PATCH
+          url: '{{baseUrl}}/api/v1/boards/:id/members/:userId'
+          params:
+            - name: id
+              value: BOARD_UUID_AQUI
+              type: path
+            - name: userId
+              value: MEMBER_USER_UUID_AQUI
+              type: path
+          body:
+            type: json
+            data: |-
+              {
+                "role": "ADMIN"
+              }
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Criar Board
+          type: http
+          seq: 1
+        http:
+          method: POST
+          url: '{{baseUrl}}/api/v1/boards'
+          body:
+            type: json
+            data: |-
+              {
+                "name": "Projeto Final T2",
+                "description": "Quadro para gestão de tarefas do projeto de ES"
+              }
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Deletar Board
+          type: http
+          seq: 3
+        http:
+          method: DELETE
+          url: '{{baseUrl}}/api/v1/boards/:id'
+          params:
+            - name: id
+              value: BOARD_UUID_AQUI
+              type: path
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Listar Membros do Board
+          type: http
+          seq: 5
+        http:
+          method: GET
+          url: '{{baseUrl}}/api/v1/boards/:id/members'
+          params:
+            - name: id
+              value: BOARD_UUID_AQUI
+              type: path
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Listar Meus Boards
+          type: http
+          seq: 2
+        http:
+          method: GET
+          url: '{{baseUrl}}/api/v1/boards'
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Remover Membro do Board
+          type: http
+          seq: 6
+        http:
+          method: DELETE
+          url: '{{baseUrl}}/api/v1/boards/:id/members/:userId'
+          params:
+            - name: id
+              value: BOARD_UUID_AQUI
+              type: path
+            - name: userId
+              value: MEMBER_USER_UUID_AQUI
+              type: path
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+  - info:
+      name: 1. Auth & Users
+      type: folder
+      seq: 1
+    request:
+      auth: inherit
+    items:
+      - info:
+          name: Atualizar User
+          type: http
+          seq: 5
+        http:
+          method: PUT
+          url: '{{baseUrl}}/api/v1/users/:id'
+          params:
+            - name: id
+              value: USER_UUID_AQUI
+              type: path
+          body:
+            type: json
+            data: |-
+              {
+                "name": "Murilo S. (Editado)"
+              }
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Criar User
+          type: http
+          seq: 1
+        http:
+          method: POST
+          url: '{{baseUrl}}/api/v1/users'
+          body:
+            type: json
+            data: |-
+              {
+                "name": "Murilo Schuck",
+                "email": "murilo@unisinos.br",
+                "password": "senha123"
+              }
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Deletar User
+          type: http
+          seq: 6
+        http:
+          method: DELETE
+          url: '{{baseUrl}}/api/v1/users/:id'
+          params:
+            - name: id
+              value: USER_UUID_AQUI
+              type: path
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Detalhes do User
+          type: http
+          seq: 4
+        http:
+          method: GET
+          url: '{{baseUrl}}/api/v1/users/:id'
+          params:
+            - name: id
+              value: USER_UUID_AQUI
+              type: path
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Login (Auto-set Token)
+          type: http
+          seq: 2
+        http:
+          method: POST
+          url: '{{baseUrl}}/api/v1/auth/login'
+          body:
+            type: json
+            data: |-
+              {
+                "email": "murilo@unisinos.br",
+                "password": "senha123"
+              }
+          auth: inherit
+        runtime:
+          scripts:
+            - type: after-response
+              code: "var jsonData = res.getBody();\r\nif(jsonData.token) {\r\n    bru.setEnvVar(\"jwt_token\", jsonData.token);\r\n}"
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Logout
+          type: http
+          seq: 3
+        http:
+          method: POST
+          url: '{{baseUrl}}/api/v1/auth/logout'
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+  - info:
+      name: 3. Tasks
+      type: folder
+      seq: 3
+    request:
+      auth: inherit
+    items:
+      - info:
+          name: Atualizar Task Parcial
+          type: http
+          seq: 3
+        http:
+          method: PATCH
+          url: '{{baseUrl}}/api/v1/tasks/:id'
+          params:
+            - name: id
+              value: TASK_UUID_AQUI
+              type: path
+          body:
+            type: json
+            data: |-
+              {
+                "status": "IN_PROGRESS",
+                "priority": "CRITICAL"
+              }
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Criar Task
+          type: http
+          seq: 1
+        http:
+          method: POST
+          url: '{{baseUrl}}/api/v1/tasks'
+          body:
+            type: json
+            data: |-
+              {
+                "title": "Implementar testes unitários",
+                "description": "Cobrir BoardService com JUnit",
+                "boardId": "BOARD_UUID_AQUI",
+                "status": "PENDING",
+                "priority": "HIGH"
+              }
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Deletar Task
+          type: http
+          seq: 4
+        http:
+          method: DELETE
+          url: '{{baseUrl}}/api/v1/tasks/:id'
+          params:
+            - name: id
+              value: TASK_UUID_AQUI
+              type: path
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Listar/Filtrar Tasks
+          type: http
+          seq: 2
+        http:
+          method: GET
+          url: '{{baseUrl}}/api/v1/tasks?boardId=&status=PENDING&priority=HIGH&dueDate=2026-06-17&search=testes'
+          params:
+            - name: boardId
+              value: ''
+              type: query
+            - name: status
+              value: PENDING
+              type: query
+            - name: priority
+              value: HIGH
+              type: query
+              disabled: true
+            - name: dueDate
+              value: '2026-06-17'
+              type: query
+              disabled: true
+            - name: assignedUserId
+              value: ''
+              type: query
+              disabled: true
+            - name: search
+              value: testes
+              type: query
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+  - info:
+      name: 4. Task Comments
+      type: folder
+      seq: 4
+    request:
+      auth: inherit
+    items:
+      - info:
+          name: Adicionar Comentário
+          type: http
+          seq: 1
+        http:
+          method: POST
+          url: '{{baseUrl}}/api/v1/tasks/:taskId/comments'
+          params:
+            - name: taskId
+              value: TASK_UUID_AQUI
+              type: path
+          body:
+            type: json
+            data: |-
+              {
+                "text": "Alguém consegue me ajudar nesta tarefa hoje à tarde?"
+              }
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Deletar Comentário
+          type: http
+          seq: 3
+        http:
+          method: DELETE
+          url: '{{baseUrl}}/api/v1/comments/:commentId'
+          params:
+            - name: commentId
+              value: COMMENT_UUID_AQUI
+              type: path
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Listar Comentários da Task
+          type: http
+          seq: 2
+        http:
+          method: GET
+          url: '{{baseUrl}}/api/v1/tasks/:taskId/comments'
+          params:
+            - name: taskId
+              value: TASK_UUID_AQUI
+              type: path
+          auth: inherit
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+request:
+  headers:
+    - name: Authorization
+      value: Bearer {{jwt_token}}
+  auth:
+    type: bearer
+    token: '{{jwt_token}}'
+  variables:
+    - name: baseUrl
+      value: http://localhost:8080
+    - name: jwt_token
+      value: ''
+docs:
+  content: Coleção com todos os endpoints mapeados no Swagger.
+  type: text/markdown
+bundled: true
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+    exportedAt: '2026-06-17T03:14:59.875Z'
+    exportedUsing: Bruno

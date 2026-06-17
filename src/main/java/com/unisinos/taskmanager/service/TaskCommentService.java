@@ -32,7 +32,7 @@ public class TaskCommentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
 
         UUID boardId = task.getBoard().getId();
-        boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
+        boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)
                 .orElseThrow(() -> new ForbiddenException("Only board members can comment on this task"));
 
         TaskComment comment = TaskComment.builder()
@@ -58,7 +58,7 @@ public class TaskCommentService {
     }
 
     public List<TaskComment> findByTaskId(UUID taskId) {
-        return taskCommentRepository.findByTaskId(taskId);
+        return taskCommentRepository.findByTask_IdOrderByCreatedAtAsc(taskId);
     }
 
     public TaskCommentResponseDTO toDto(TaskComment comment) {

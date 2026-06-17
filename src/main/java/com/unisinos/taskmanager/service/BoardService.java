@@ -18,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -55,9 +54,7 @@ public class BoardService {
     }
 
     public List<Board> getUserBoards(UUID userId) {
-        return boardMemberRepository.findByUserId(userId).stream()
-                .map(BoardMember::getBoard)
-                .collect(Collectors.toList());
+        return boardRepository.findBoardsByMemberId(userId);
     }
 
     public void deleteBoard(UUID boardId, UUID requesterId) {
@@ -69,21 +66,25 @@ public class BoardService {
         }
 
         // delete tasks
-        taskRepository.deleteAll(taskRepository.findByBoardId(boardId));
+        taskRepository.deleteAll(taskRepository.findByBoard_Id(boardId));
 
         // delete members
-        boardMemberRepository.deleteAll(boardMemberRepository.findByBoardId(boardId));
+        boardMemberRepository.deleteAll(boardMemberRepository.findByBoard_Id(boardId));
 
         boardRepository.delete(board);
     }
 
     public void requireMember(UUID boardId, UUID requesterId) {
-        boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
+        boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found"));
+        boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)
                 .orElseThrow(() -> new ForbiddenException("Access denied"));
     }
 
     public List<BoardMember> listMembers(UUID boardId) {
-        return boardMemberRepository.findByBoardId(boardId);
+        boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found"));
+        return boardMemberRepository.findByBoard_Id(boardId);
     }
 
     /**
@@ -96,7 +97,7 @@ public class BoardService {
         User userToAdd = userRepository.findByEmailAndDeletedFalse(emailToAdd)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (boardMemberRepository.existsByBoardIdAndUserId(boardId, userToAdd.getId())) {
+        if (boardMemberRepository.existsByBoard_IdAndUser_Id(boardId, userToAdd.getId())) {
             log.warn("Conflict: user {} is already a member of board {}", emailToAdd, boardId);
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already a member of the board");
         }
@@ -115,20 +116,27 @@ public class BoardService {
     }
 
     /**
-     * Removes a member from a board. Enforces RBAC: requester must be OWNER or ADMIN.
+     * Removes a member from a board.
+     * Enforces RBAC: requester must be OWNER or ADMIN.
+     * Security rule: The OWNER of the board cannot be removed.
      */
     public void removeMember(UUID boardId, UUID userIdToRemove, UUID requesterId) {
         requireOwnerOrAdmin(boardId, requesterId);
 
-        BoardMember target = boardMemberRepository.findByBoardIdAndUserId(boardId, userIdToRemove)
+        BoardMember target = boardMemberRepository.findByBoard_IdAndUser_Id(boardId, userIdToRemove)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
+
+        if (target.getRole() == BoardRole.OWNER) {
+            log.warn("Security constraint violation: Attempt to remove the OWNER from board {}", boardId);
+            throw new ForbiddenException("Cannot remove the board OWNER. The board must always have an owner.");
+        }
 
         boardMemberRepository.delete(target);
         log.info("Member removed: user {} from board {}", userIdToRemove, boardId);
     }
 
     private void requireOwnerOrAdmin(UUID boardId, UUID requesterId) {
-        BoardMember requesterMember = boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
+        BoardMember requesterMember = boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)
                 .orElseThrow(() -> {
                     log.warn("Access denied: user {} is not a member of board {}", requesterId, boardId);
                     return new ForbiddenException("Access denied");
@@ -139,6 +147,38 @@ public class BoardService {
             log.warn("Access denied: user {} is not OWNER/ADMIN of board {} (role: {})", requesterId, boardId, role);
             throw new ForbiddenException("Access denied");
         }
+    }
+
+    /**
+     * Updates the role of an existing member within a board.
+     * Enforces strict RBAC (Role-Based Access Control) to prevent unauthorized privilege escalation.
+     */
+    public void updateMemberRole(UUID boardId, UUID targetUserId, BoardRole newRole, UUID requesterId) {
+
+        BoardMember requesterMember = boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)
+                .orElseThrow(() -> new ForbiddenException("Access denied: You are not a member of this board."));
+
+        if (requesterMember.getRole() == BoardRole.MEMBER) {
+            log.warn("Access denied: User {} tried to change roles in board {} without ADMIN/OWNER privileges.", requesterId, boardId);
+            throw new ForbiddenException("Only ADMINs or OWNERs can change member roles.");
+        }
+
+        BoardMember targetMember = boardMemberRepository.findByBoard_IdAndUser_Id(boardId, targetUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Target member not found in this board."));
+
+        if (targetMember.getRole() == BoardRole.OWNER) {
+            throw new ForbiddenException("Cannot demote or change the role of the board OWNER.");
+        }
+
+        if (newRole == BoardRole.OWNER && requesterMember.getRole() != BoardRole.OWNER) {
+            log.warn("Privilege escalation attempt: User {} tried to promote user {} to OWNER.", requesterId, targetUserId);
+            throw new ForbiddenException("Only the current OWNER can promote another user to OWNER.");
+        }
+
+        targetMember.setRole(newRole);
+        boardMemberRepository.save(targetMember);
+
+        log.info("Role successfully updated: User {} is now {} on board {}", targetUserId, newRole, boardId);
     }
 }
 

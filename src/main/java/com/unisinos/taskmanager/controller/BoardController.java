@@ -1,6 +1,6 @@
 package com.unisinos.taskmanager.controller;
 
-import com.unisinos.taskmanager.dto.AddMemberDTO;
+import com.unisinos.taskmanager.dto.*;
 import com.unisinos.taskmanager.model.Board;
 import com.unisinos.taskmanager.model.BoardMember;
 import com.unisinos.taskmanager.model.User;
@@ -13,9 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.unisinos.taskmanager.dto.BoardCreateDTO;
-import com.unisinos.taskmanager.dto.BoardResponseDTO;
-import com.unisinos.taskmanager.dto.BoardMemberResponseDTO;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -98,6 +96,19 @@ public class BoardController {
 
         boardService.removeMember(boardId, userIdToRemove, requester.getId());
         log.info("Member {} removed from board {}", userIdToRemove, boardId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/members/{userId}")
+    public ResponseEntity<Void> updateMemberRole(
+            @PathVariable("id") UUID boardId,
+            @PathVariable("userId") UUID targetUserId,
+            @Valid @RequestBody ChangeRoleDTO dto) {
+
+        User requester = SecurityUtils.getAuthenticatedRequester(userRepository);
+
+        boardService.updateMemberRole(boardId, targetUserId, dto.getRole(), requester.getId());
+
         return ResponseEntity.noContent().build();
     }
 }
