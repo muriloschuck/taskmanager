@@ -116,13 +116,20 @@ public class BoardService {
     }
 
     /**
-     * Removes a member from a board. Enforces RBAC: requester must be OWNER or ADMIN.
+     * Removes a member from a board.
+     * Enforces RBAC: requester must be OWNER or ADMIN.
+     * Security rule: The OWNER of the board cannot be removed.
      */
     public void removeMember(UUID boardId, UUID userIdToRemove, UUID requesterId) {
         requireOwnerOrAdmin(boardId, requesterId);
 
         BoardMember target = boardMemberRepository.findByBoard_IdAndUser_Id(boardId, userIdToRemove)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
+
+        if (target.getRole() == BoardRole.OWNER) {
+            log.warn("Security constraint violation: Attempt to remove the OWNER from board {}", boardId);
+            throw new ForbiddenException("Cannot remove the board OWNER. The board must always have an owner.");
+        }
 
         boardMemberRepository.delete(target);
         log.info("Member removed: user {} from board {}", userIdToRemove, boardId);
