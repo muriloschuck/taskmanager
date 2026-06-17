@@ -91,6 +91,10 @@ public class TaskService {
             assigned = userRepository.findById(dto.getAssignedUserId())
                     .filter(u -> !u.isDeleted())
                     .orElseThrow(() -> new UserNotFoundException("Assigned user not found"));
+
+            if (!boardMemberRepository.existsByBoard_IdAndUser_Id(boardId, assigned.getId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The assigned user must be a member of the board.");
+            }
         }
 
         TaskStatus status = dto.getStatus() != null ? dto.getStatus() : TaskStatus.PENDING;
@@ -150,6 +154,11 @@ public class TaskService {
             User assigned = userRepository.findById(dto.getAssignedUserId())
                     .filter(u -> !u.isDeleted())
                     .orElseThrow(() -> new UserNotFoundException("Assigned user not found"));
+
+            if (!boardMemberRepository.existsByBoard_IdAndUser_Id(boardId, assigned.getId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The assigned user must be a member of the board.");
+            }
+
             task.setAssignedUser(assigned);
         }
 
