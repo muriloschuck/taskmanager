@@ -30,4 +30,3 @@ databaseChangeLog:
             columns:
               - column:
                   name: token
-
