@@ -141,6 +141,38 @@ public class BoardService {
             throw new ForbiddenException("Access denied");
         }
     }
+
+    /**
+     * Updates the role of an existing member within a board.
+     * Enforces strict RBAC (Role-Based Access Control) to prevent unauthorized privilege escalation.
+     */
+    public void updateMemberRole(UUID boardId, UUID targetUserId, BoardRole newRole, UUID requesterId) {
+
+        BoardMember requesterMember = boardMemberRepository.findByBoard_IdAndUser_Id(boardId, requesterId)
+                .orElseThrow(() -> new ForbiddenException("Access denied: You are not a member of this board."));
+
+        if (requesterMember.getRole() == BoardRole.MEMBER) {
+            log.warn("Access denied: User {} tried to change roles in board {} without ADMIN/OWNER privileges.", requesterId, boardId);
+            throw new ForbiddenException("Only ADMINs or OWNERs can change member roles.");
+        }
+
+        BoardMember targetMember = boardMemberRepository.findByBoard_IdAndUser_Id(boardId, targetUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Target member not found in this board."));
+
+        if (targetMember.getRole() == BoardRole.OWNER) {
+            throw new ForbiddenException("Cannot demote or change the role of the board OWNER.");
+        }
+
+        if (newRole == BoardRole.OWNER && requesterMember.getRole() != BoardRole.OWNER) {
+            log.warn("Privilege escalation attempt: User {} tried to promote user {} to OWNER.", requesterId, targetUserId);
+            throw new ForbiddenException("Only the current OWNER can promote another user to OWNER.");
+        }
+
+        targetMember.setRole(newRole);
+        boardMemberRepository.save(targetMember);
+
+        log.info("Role successfully updated: User {} is now {} on board {}", targetUserId, newRole, boardId);
+    }
 }
 
 
