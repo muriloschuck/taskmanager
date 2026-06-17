@@ -8,6 +8,7 @@ import com.unisinos.taskmanager.model.User;
 import com.unisinos.taskmanager.model.enums.BoardRole;
 import com.unisinos.taskmanager.repository.BoardMemberRepository;
 import com.unisinos.taskmanager.repository.BoardRepository;
+import com.unisinos.taskmanager.repository.TaskRepository;
 import com.unisinos.taskmanager.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,63 @@ public class BoardService {
     private final BoardMemberRepository boardMemberRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
+    private final TaskRepository taskRepository;
+
+
+    public Board createBoard(com.unisinos.taskmanager.dto.BoardCreateDTO dto, UUID requesterId) {
+        User owner = userRepository.findById(requesterId)
+                .filter(u -> !u.isDeleted())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Board board = Board.builder()
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .owner(owner)
+                .build();
+
+        Board saved = boardRepository.save(board);
+
+        BoardMember ownerMember = BoardMember.builder()
+                .board(saved)
+                .user(owner)
+                .role(BoardRole.OWNER)
+                .build();
+
+        boardMemberRepository.save(ownerMember);
+        return saved;
+    }
+
+    public List<Board> getUserBoards(UUID userId) {
+        return boardMemberRepository.findByUserId(userId).stream()
+                .map(BoardMember::getBoard)
+                .collect(Collectors.toList());
+    }
+
+    public void deleteBoard(UUID boardId, UUID requesterId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found"));
+
+        if (board.getOwner() == null || !board.getOwner().getId().equals(requesterId)) {
+            throw new ForbiddenException("Only the owner can delete the board");
+        }
+
+        // delete tasks
+        taskRepository.deleteAll(taskRepository.findByBoardId(boardId));
+
+        // delete members
+        boardMemberRepository.deleteAll(boardMemberRepository.findByBoardId(boardId));
+
+        boardRepository.delete(board);
+    }
+
+    public void requireMember(UUID boardId, UUID requesterId) {
+        boardMemberRepository.findByBoardIdAndUserId(boardId, requesterId)
+                .orElseThrow(() -> new ForbiddenException("Access denied"));
+    }
+
+    public List<BoardMember> listMembers(UUID boardId) {
+        return boardMemberRepository.findByBoardId(boardId);
+    }
 
     /**
      * Adds a user (found by email) to the board as a MEMBER.
